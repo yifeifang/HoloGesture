@@ -35,70 +35,29 @@ double positionNode::distance(float x, float y, float z)
     return sqrt(pow((this->_position.xyz.x - x), 2) + pow((this->_position.xyz.y - y), 2) + pow((this->_position.xyz.z - z), 2));
 }
 
-bool positionNode::match(k4abt_joint_t read)
+bool positionNode::activate(k4abt_joint_t read)
 {
     return distance(read.position.xyz.x, read.position.xyz.y, read.position.xyz.z) >= _threshold ? false : true;
 }
 
-orientationNode::orientationNode(unsigned id, bool leaf, k4abt_joint_id_t joint, k4a_quaternion_t orientation, float threshold) : gestureNode(id, leaf, joint), _orientation(orientation), _threshold(threshold)
-{
-}
-
-bool orientationNode::match(k4abt_joint_t read)
-{
-    printf("Orientation matching here\n");
-    return true;
-}
-
-
-gestureTree::gestureTree(gestureNode* Node, std::unordered_map<k4abt_joint_id_t, k4abt_joint_t>* pjoint_map)
+gestureTree::gestureTree(gestureNode* Node, gestureNode* root, std::unordered_map<k4abt_joint_id_t, k4abt_joint_t>* pjoint_map)
 {
     this->pjoint_map = pjoint_map;
     this->state = Node;
+    this->_root = root;
 }
-
-//int gestureTree::traverse(float x, float y, float z)
-//{
-//    for (auto & child : state->_children)
-//    {
-//        if (child->match(x, y, z, 200))
-//        {
-//            if (child->leaf)
-//            {
-//                printf("Detect state ID = %d\n", child->id);
-//                timeout = 0;
-//                return child->gesture_id;
-//            }
-//            else
-//            {
-//                printf("Detect state ID = %d\n", child->id);
-//                state = child;
-//            }
-//        }
-//        else if (timeout >= 75)
-//        {
-//            timeout = 0;
-//            printf("Gesture timeout\n");
-//            return -1;
-//        }
-//        else
-//        {
-//            timeout++;
-//        }
-//    }
-//    return 0;
-//}
 
 int gestureTree::traverse_map(void)
 {
     for (auto& child : state->_children)
     {
-        if (child->match((*pjoint_map)[child->get_joint()]))
+        if (child->activate((*pjoint_map)[child->get_joint()]))
         {
             if (child->_leaf)
             {
-                printf("Detect state ID = %d\n", child->_id);
+                printf("Detect leaf state ID = %d\n", child->_id);
                 timeout = 0;
+                set_state(_root);
                 return child->_gesture_id;
             }
             else
@@ -111,6 +70,7 @@ int gestureTree::traverse_map(void)
         {
             timeout = 0;
             printf("Gesture timeout\n");
+            set_state(_root);
             return -1;
         }
         else
