@@ -15,7 +15,7 @@
         exit(1);                                                                                         \
     }                                                                                                    \
 
-bool process_gesture(unsigned gesture_id)
+bool process_gesture(unsigned gesture_id, k4a_device_t & device, k4abt_tracker_t & tracker)
 {
     switch (gesture_id)
     {
@@ -61,6 +61,126 @@ bool process_gesture(unsigned gesture_id)
             SendInput(1, &ip2, sizeof(INPUT));
             break;
         }
+        case 3:
+        {
+            k4a_float3_t init_position = {0};
+            k4a_capture_t sensor_capture;
+            k4a_wait_result_t get_capture_result = k4a_device_get_capture(device, &sensor_capture, K4A_WAIT_INFINITE);
+            if (get_capture_result == K4A_WAIT_RESULT_SUCCEEDED)
+            {
+                k4a_wait_result_t queue_capture_result = k4abt_tracker_enqueue_capture(tracker, sensor_capture, K4A_WAIT_INFINITE);
+                k4a_capture_release(sensor_capture); // Remember to release the sensor capture once you finish using it
+                if (queue_capture_result == K4A_WAIT_RESULT_TIMEOUT)
+                {
+                    // It should never hit timeout when K4A_WAIT_INFINITE is set.
+                    printf("Error! Add capture to tracker process queue timeout!\n");
+                    break;
+                }
+                else if (queue_capture_result == K4A_WAIT_RESULT_FAILED)
+                {
+                    printf("Error! Add capture to tracker process queue failed!\n");
+                    break;
+                }
+
+                k4abt_frame_t body_frame = NULL;
+                k4a_wait_result_t pop_frame_result = k4abt_tracker_pop_result(tracker, &body_frame, K4A_WAIT_INFINITE);
+                if (pop_frame_result == K4A_WAIT_RESULT_SUCCEEDED)
+                {
+                    // Successfully popped the body tracking result. Start your processing
+
+                    k4abt_skeleton_t my_skeleton;
+                    k4abt_frame_get_body_skeleton(body_frame, 0, &my_skeleton);
+                    if (my_skeleton.joints[K4ABT_JOINT_HAND_RIGHT].confidence_level >= K4ABT_JOINT_CONFIDENCE_MEDIUM)
+                    {
+                        init_position = my_skeleton.joints[K4ABT_JOINT_HAND_RIGHT].position;
+                    }
+                    k4abt_frame_release(body_frame); // Remember to release the body frame once you finish using it
+                }
+                else if (pop_frame_result == K4A_WAIT_RESULT_TIMEOUT)
+                {
+                    //  It should never hit timeout when K4A_WAIT_INFINITE is set.
+                    printf("Error! Pop body frame result timeout!\n");
+                    break;
+                }
+                else
+                {
+                    printf("Pop body frame result failed!\n");
+                    break;
+                }
+            }
+            else if (get_capture_result == K4A_WAIT_RESULT_TIMEOUT)
+            {
+                // It should never hit time out when K4A_WAIT_INFINITE is set.
+                printf("Error! Get depth frame time out!\n");
+                break;
+            }
+            else
+            {
+                printf("Get depth capture returned error: %d\n", get_capture_result);
+                break;
+            }
+            while (true)
+            {
+                k4a_wait_result_t get_capture_result = k4a_device_get_capture(device, &sensor_capture, K4A_WAIT_INFINITE);
+                if (get_capture_result == K4A_WAIT_RESULT_SUCCEEDED)
+                {
+                    k4a_wait_result_t queue_capture_result = k4abt_tracker_enqueue_capture(tracker, sensor_capture, K4A_WAIT_INFINITE);
+                    k4a_capture_release(sensor_capture); // Remember to release the sensor capture once you finish using it
+                    if (queue_capture_result == K4A_WAIT_RESULT_TIMEOUT)
+                    {
+                        // It should never hit timeout when K4A_WAIT_INFINITE is set.
+                        printf("Error! Add capture to tracker process queue timeout!\n");
+                        break;
+                    }
+                    else if (queue_capture_result == K4A_WAIT_RESULT_FAILED)
+                    {
+                        printf("Error! Add capture to tracker process queue failed!\n");
+                        break;
+                    }
+
+                    k4abt_frame_t body_frame = NULL;
+                    k4a_wait_result_t pop_frame_result = k4abt_tracker_pop_result(tracker, &body_frame, K4A_WAIT_INFINITE);
+                    if (pop_frame_result == K4A_WAIT_RESULT_SUCCEEDED)
+                    {
+                        // Successfully popped the body tracking result. Start your processing
+
+                        k4abt_skeleton_t my_skeleton;
+                        k4abt_frame_get_body_skeleton(body_frame, 0, &my_skeleton);
+                        if (my_skeleton.joints[K4ABT_JOINT_HAND_RIGHT].confidence_level >= K4ABT_JOINT_CONFIDENCE_MEDIUM)
+                        {
+                            if (std::abs(my_skeleton.joints[K4ABT_JOINT_HAND_RIGHT].position.xyz.y - init_position.xyz.y) > 50)
+                            {
+                                printf("init y = %f, current y = %f\n", init_position.xyz.y, my_skeleton.joints[K4ABT_JOINT_HAND_RIGHT].position.xyz.y);
+                            }
+                        }
+                        k4abt_frame_release(body_frame); // Remember to release the body frame once you finish using it
+                    }
+                    else if (pop_frame_result == K4A_WAIT_RESULT_TIMEOUT)
+                    {
+                        //  It should never hit timeout when K4A_WAIT_INFINITE is set.
+                        printf("Error! Pop body frame result timeout!\n");
+                        break;
+                    }
+                    else
+                    {
+                        printf("Pop body frame result failed!\n");
+                        break;
+                    }
+                }
+                else if (get_capture_result == K4A_WAIT_RESULT_TIMEOUT)
+                {
+                    // It should never hit time out when K4A_WAIT_INFINITE is set.
+                    printf("Error! Get depth frame time out!\n");
+                    break;
+                }
+                else
+                {
+                    printf("Get depth capture returned error: %d\n", get_capture_result);
+                    break;
+                }
+            }
+            break;
+        }
         default:
             break;
     }
@@ -79,18 +199,22 @@ int main()
     positionNode* left2 = new positionNode(5, true, K4ABT_JOINT_HAND_RIGHT, k4a_float3_t{ 250,-25,500 }, 200);
     positionNode* left_left_land = new positionNode(6, true, K4ABT_JOINT_HAND_LEFT, k4a_float3_t{ 250,-25,500 }, 200);
 
+    positionNode* test = new positionNode(7, true, K4ABT_JOINT_HAND_RIGHT, k4a_float3_t{ -250,-80,385 }, 200);
+
     back->set_gesture(1);
     right->set_gesture(2);
     left2->set_gesture(2);
     left_left_land->set_gesture(1);
+    test->set_gesture(3);
 
     front->add_child(back);
     front->add_child(left2);
     front->add_child(left_left_land);
     left->add_child(right);
 
-    root->add_child(front);
-    root->add_child(left);
+    //root->add_child(front);
+    //root->add_child(left);
+    root->add_child(test);
 
     gestureTree mytree(root, root, &joint_map);
 
@@ -156,7 +280,7 @@ int main()
                     int gesture = mytree.traverse_map();
                     if (gesture)
                     {
-                        process_gesture(gesture);
+                        process_gesture(gesture, device, tracker);
                         Sleep(1000);
                     }
                     else if (gesture == -1)     // timeout
@@ -200,6 +324,7 @@ int main()
     delete right;
     delete left2;
     delete left_left_land;
+    delete test;
 
     k4abt_tracker_shutdown(tracker);
     k4abt_tracker_destroy(tracker);
