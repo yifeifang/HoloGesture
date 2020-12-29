@@ -74,12 +74,23 @@ int main()
     positionNode * root = new positionNode(0, false, K4ABT_JOINT_HAND_RIGHT, k4a_float3_t{0,0,0}, 200);
     positionNode * front = new positionNode(1, false, K4ABT_JOINT_HAND_RIGHT, k4a_float3_t{ -250,-80,385 }, 200);
     positionNode * back = new positionNode(2, true, K4ABT_JOINT_HAND_RIGHT, k4a_float3_t{ -200,150,800 }, 200);
+    positionNode* left = new positionNode(3, false, K4ABT_JOINT_HAND_RIGHT, k4a_float3_t{ 250,-25,500 }, 200);
+    positionNode* right = new positionNode(4, true, K4ABT_JOINT_HAND_RIGHT, k4a_float3_t{ -320,-85,425 }, 200);
+    positionNode* left2 = new positionNode(5, true, K4ABT_JOINT_HAND_RIGHT, k4a_float3_t{ 250,-25,500 }, 200);
+    positionNode* left_left_land = new positionNode(6, true, K4ABT_JOINT_HAND_LEFT, k4a_float3_t{ 250,-25,500 }, 200);
 
     back->set_gesture(1);
+    right->set_gesture(2);
+    left2->set_gesture(2);
+    left_left_land->set_gesture(1);
 
     front->add_child(back);
+    front->add_child(left2);
+    front->add_child(left_left_land);
+    left->add_child(right);
 
     root->add_child(front);
+    root->add_child(left);
 
     gestureTree mytree(root, root, &joint_map);
 
@@ -185,6 +196,10 @@ int main()
     delete root;
     delete front;
     delete back;
+    delete left;
+    delete right;
+    delete left2;
+    delete left_left_land;
 
     k4abt_tracker_shutdown(tracker);
     k4abt_tracker_destroy(tracker);
