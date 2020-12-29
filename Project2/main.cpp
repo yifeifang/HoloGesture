@@ -69,30 +69,19 @@ bool process_gesture(unsigned gesture_id)
 
 int main()
 {
-    std::unordered_map<k4abt_joint_id_t, k4a_float3_t> joint_map;
+    std::unordered_map<k4abt_joint_id_t, k4abt_joint_t> joint_map;
 
-    gestureNode root(0, false, K4ABT_JOINT_HAND_RIGHT, k4a_float3_t{0,0,0});
-    gestureNode front(1, false, K4ABT_JOINT_HAND_RIGHT, k4a_float3_t{-250,-80,385});
-    gestureNode back(2, true, K4ABT_JOINT_HAND_RIGHT, k4a_float3_t{-200,150,800});
-    gestureNode left(3, false, K4ABT_JOINT_HAND_RIGHT, k4a_float3_t{ 250,-25,500 });
-    gestureNode right(4, true, K4ABT_JOINT_HAND_RIGHT, k4a_float3_t{ -320,-85,425 });
-    gestureNode left2(5, true, K4ABT_JOINT_HAND_RIGHT, k4a_float3_t{ 250,-25,500 });
-    gestureNode left_left_land(6, true, K4ABT_JOINT_HAND_LEFT, k4a_float3_t{ 250,-25,500 });
-    back.set_gesture(1);
-    right.set_gesture(2);
-    left2.set_gesture(2);
-    left_left_land.set_gesture(1);
+    positionNode * root = new positionNode(0, false, K4ABT_JOINT_HAND_RIGHT, k4a_float3_t{0,0,0}, 200);
+    positionNode * front = new positionNode(1, false, K4ABT_JOINT_HAND_RIGHT, k4a_float3_t{ -250,-80,385 }, 200);
+    positionNode * back = new positionNode(2, true, K4ABT_JOINT_HAND_RIGHT, k4a_float3_t{ -200,150,800 }, 200);
 
-    front.add_child(back);
-    front.add_child(left2);
-    front.add_child(left_left_land);
-    left.add_child(right);
+    back->set_gesture(1);
 
-    root.add_child(front);
-    root.add_child(left);
+    front->add_child(back);
 
-    gestureNode* state = &root;
-    gestureTree mytree(&root, &joint_map);
+    root->add_child(front);
+
+    gestureTree mytree(root, root, &joint_map);
 
     int timeout = 0;
 
@@ -103,6 +92,7 @@ int main()
     k4a_device_configuration_t deviceConfig = K4A_DEVICE_CONFIG_INIT_DISABLE_ALL;
     deviceConfig.depth_mode = K4A_DEPTH_MODE_WFOV_2X2BINNED;
     deviceConfig.color_resolution = K4A_COLOR_RESOLUTION_OFF;
+    deviceConfig.camera_fps = K4A_FRAMES_PER_SECOND_15;
     VERIFY(k4a_device_start_cameras(device, &deviceConfig), "Start K4A cameras failed!");
 
     k4a_calibration_t sensor_calibration;
@@ -113,7 +103,6 @@ int main()
     k4abt_tracker_configuration_t tracker_config = K4ABT_TRACKER_CONFIG_DEFAULT;
     VERIFY(k4abt_tracker_create(&sensor_calibration, tracker_config, &tracker), "Body tracker initialization failed!");
 
-    int frame_count = 0;
     while(true)
     {
         if (GetAsyncKeyState(VK_ESCAPE))
@@ -125,7 +114,6 @@ int main()
         k4a_wait_result_t get_capture_result = k4a_device_get_capture(device, &sensor_capture, K4A_WAIT_INFINITE);
         if (get_capture_result == K4A_WAIT_RESULT_SUCCEEDED)
         {
-            frame_count++;
             k4a_wait_result_t queue_capture_result = k4abt_tracker_enqueue_capture(tracker, sensor_capture, K4A_WAIT_INFINITE);
             k4a_capture_release(sensor_capture); // Remember to release the sensor capture once you finish using it
             if (queue_capture_result == K4A_WAIT_RESULT_TIMEOUT)
@@ -150,51 +138,19 @@ int main()
                 k4abt_frame_get_body_skeleton(body_frame, 0, &my_skeleton);
                 if (my_skeleton.joints[K4ABT_JOINT_HAND_RIGHT].confidence_level >= K4ABT_JOINT_CONFIDENCE_MEDIUM)
                 {
-                    joint_map[K4ABT_JOINT_HAND_RIGHT] = my_skeleton.joints[K4ABT_JOINT_HAND_RIGHT].position;
-                    joint_map[K4ABT_JOINT_HAND_LEFT] = my_skeleton.joints[K4ABT_JOINT_HAND_LEFT].position;
+                    joint_map[K4ABT_JOINT_HAND_RIGHT] = my_skeleton.joints[K4ABT_JOINT_HAND_RIGHT];
+                    joint_map[K4ABT_JOINT_HAND_LEFT] = my_skeleton.joints[K4ABT_JOINT_HAND_LEFT];
+                    joint_map[K4ABT_JOINT_WRIST_RIGHT] = my_skeleton.joints[K4ABT_JOINT_WRIST_RIGHT];
 
-                    float readx = my_skeleton.joints[K4ABT_JOINT_HAND_RIGHT].position.xyz.x;
-                    float ready = my_skeleton.joints[K4ABT_JOINT_HAND_RIGHT].position.xyz.y;
-                    float readz = my_skeleton.joints[K4ABT_JOINT_HAND_RIGHT].position.xyz.z;
-                    //printf("X = %f, Y = %f, Z = %f\n", readx, ready, readz);
-                    //int gesture = mytree.traverse(readx, ready, readz);
                     int gesture = mytree.traverse_map();
                     if (gesture)
                     {
                         process_gesture(gesture);
-                        mytree.set_state(&root);
                         Sleep(1000);
                     }
                     else if (gesture == -1)     // timeout
                     {
-                        mytree.set_state(&root);
                     }
-                    /*if (state->match(readx, ready, readz, 200))
-                    {
-                        if (state->leaf)
-                        {
-                            printf("Detect state ID = %d\n", state->id);
-                            process_gesture(state->gesture_id);
-                            timeout = 0;
-                            state = &root;
-                        }
-                        else
-                        {
-                            printf("Detect state ID = %d\n", state->id);
-                            state = &(state->children[0]);
-                        }
-                    }
-                    else if(timeout >= 75)
-                    {
-                        timeout = 0;
-                        state = &root;
-                        printf("Gesture timeout\n");
-                    }
-                    else
-                    {
-                        timeout++;
-                    }*/
-                    //printf("Right hand distance X: %f,  Y: %f,  Z: %f\n", my_skeleton.joints[K4ABT_JOINT_HAND_RIGHT].position.xyz.x, my_skeleton.joints[K4ABT_JOINT_HAND_RIGHT].position.xyz.y, my_skeleton.joints[K4ABT_JOINT_HAND_RIGHT].position.xyz.z);
                 }
 
                 k4abt_frame_release(body_frame); // Remember to release the body frame once you finish using it
@@ -225,6 +181,10 @@ int main()
 
     } 
     printf("Finished body tracking processing!\n");
+
+    delete root;
+    delete front;
+    delete back;
 
     k4abt_tracker_shutdown(tracker);
     k4abt_tracker_destroy(tracker);

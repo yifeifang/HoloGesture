@@ -21,9 +21,15 @@
     <ClCompile Include="gesturetree.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Quat.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="gesturetree.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Quat.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
