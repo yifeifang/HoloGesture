@@ -58,7 +58,7 @@ int gestureTree::traverse_map(void)
     }
     for (auto& child : state->_children)
     {      
-        if (child->activate((*pjoint_map)[child->get_joint()]))
+        if ((*pjoint_map)[child->get_joint()].confidence_level >= K4ABT_JOINT_CONFIDENCE_MEDIUM && child->activate((*pjoint_map)[child->get_joint()]))
         {
             if (child->_leaf)
             {
