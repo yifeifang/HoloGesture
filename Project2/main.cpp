@@ -18,6 +18,7 @@
 
 bool process_gesture(unsigned gesture_id, mykinect & device)
 {
+    printf("process_gesture\n");
     switch (gesture_id)
     {
         case 1:
@@ -69,11 +70,6 @@ bool process_gesture(unsigned gesture_id, mykinect & device)
             ip1.ki.wVk = VK_VOLUME_DOWN;
             ip1.ki.dwFlags = 0;
 
-            ip1.ki.dwFlags = 0;
-            SendInput(1, &ip1, sizeof(INPUT));
-            ip1.ki.dwFlags = KEYEVENTF_KEYUP;
-            SendInput(1, &ip1, sizeof(INPUT));
-
             INPUT ip2 = { 0 };
             ip2.type = INPUT_KEYBOARD;
             ip2.ki.wVk = VK_VOLUME_UP;
@@ -102,14 +98,14 @@ bool process_gesture(unsigned gesture_id, mykinect & device)
                         if(std::abs(device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.x - init_position.xyz.x) < 80)
                         {
                             //printf("init y = %f, current y = %f, subtracted y = %f\n", init_position.xyz.y, device._skeleton.joints[K4ABT_JOINT_HAND_RIGHT].position.xyz.y, device._skeleton.joints[K4ABT_JOINT_HAND_RIGHT].position.xyz.y - init_position.xyz.y);
-                            if ((device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.y - init_position.xyz.y) > 80)
+                            if ((device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.y - init_position.xyz.y) > 50)
                             {
                                 ip1.ki.dwFlags = 0;
                                 SendInput(1, &ip1, sizeof(INPUT));
                                 ip1.ki.dwFlags = KEYEVENTF_KEYUP;
                                 SendInput(1, &ip1, sizeof(INPUT));
                             }
-                            else if ((device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.y - init_position.xyz.y) < -80)
+                            else if ((device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.y - init_position.xyz.y) < -50)
                             {
                                 ip2.ki.dwFlags = 0;
                                 SendInput(1, &ip2, sizeof(INPUT));
@@ -196,13 +192,13 @@ int main()
                 joint_map[K4ABT_JOINT_WRIST_RIGHT] = device._skeleton.joints[K4ABT_JOINT_WRIST_RIGHT];
 
                 int gesture = mytree.traverse_map();
-                if (gesture)
+                if (gesture == -1)// timeout
+                {
+                }
+                else if (gesture)     
                 {
                     process_gesture(gesture, device);
                     Sleep(1000);
-                }
-                else if (gesture == -1)     // timeout
-                {
                 }
             }
         }
