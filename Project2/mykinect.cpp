@@ -65,12 +65,11 @@ bool mykinect::update_skeleton()
         {
             return false;
         }
-        k4abt_frame_t body_frame = NULL;
         k4a_wait_result_t pop_frame_result = this->pop_frame_result(100);
         if (pop_frame_result == K4A_WAIT_RESULT_SUCCEEDED)
         {
             k4abt_frame_get_body_skeleton(_body_frame, 0, &_skeleton);
-            k4abt_frame_release(body_frame); // Remember to release the body frame once you finish using it
+            release_body_frame();
             return true;
         }
         else if (pop_frame_result == K4A_WAIT_RESULT_TIMEOUT)

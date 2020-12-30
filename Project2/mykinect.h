@@ -21,6 +21,7 @@ class mykinect
         void stop_cameras();
         k4a_wait_result_t get_capture(int32_t timeout_in_ms);
         void release_capture();
+        void release_body_frame();
         k4a_wait_result_t enqueue_capture(int32_t timeout_in_ms);
         k4a_wait_result_t pop_frame_result(int32_t timeout_in_ms);
         bool update_skeleton();
