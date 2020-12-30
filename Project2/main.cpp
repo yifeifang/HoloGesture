@@ -87,8 +87,10 @@ bool process_gesture(unsigned gesture_id, mykinect & device)
 
             k4a_float3_t init_position = {0};
 
+            Sleep(300);
+
             // need to wait infinite time
-            if (device.update_skeleton())
+            if (device.update_skeleton(K4A_WAIT_INFINITE))
             {
                 if (device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].confidence_level >= K4ABT_JOINT_CONFIDENCE_MEDIUM)
                 {
@@ -102,7 +104,7 @@ bool process_gesture(unsigned gesture_id, mykinect & device)
 
             while (true)
             {
-                if (device.update_skeleton())
+                if (device.update_skeleton(0))
                 {
                     if (device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].confidence_level >= K4ABT_JOINT_CONFIDENCE_MEDIUM)
                     {
@@ -196,7 +198,7 @@ int main()
             printf("ESC pressed, terminate\n");
             break;
         }
-        if (device.update_skeleton())
+        if (device.update_skeleton(100))
         {
             //if (device._skeleton.joints[K4ABT_JOINT_HAND_RIGHT].confidence_level >= K4ABT_JOINT_CONFIDENCE_MEDIUM)
             //{

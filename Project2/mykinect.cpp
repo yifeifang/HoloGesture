@@ -50,12 +50,12 @@ k4a_wait_result_t mykinect::pop_frame_result(int32_t timeout_in_ms)
     return k4abt_tracker_pop_result(_tracker, &_body_frame, timeout_in_ms);
 }
 
-bool mykinect::update_skeleton()
+bool mykinect::update_skeleton(int32_t timeout_in_ms)
 {
-    k4a_wait_result_t get_capture_result = this->get_capture(100);
+    k4a_wait_result_t get_capture_result = this->get_capture(timeout_in_ms);
     if (get_capture_result == K4A_WAIT_RESULT_SUCCEEDED)
     {
-        k4a_wait_result_t queue_capture_result = this->enqueue_capture(100);
+        k4a_wait_result_t queue_capture_result = this->enqueue_capture(timeout_in_ms);
         this->release_capture();
         if (queue_capture_result == K4A_WAIT_RESULT_TIMEOUT)
         {
@@ -65,7 +65,7 @@ bool mykinect::update_skeleton()
         {
             return false;
         }
-        k4a_wait_result_t pop_frame_result = this->pop_frame_result(100);
+        k4a_wait_result_t pop_frame_result = this->pop_frame_result(timeout_in_ms);
         if (pop_frame_result == K4A_WAIT_RESULT_SUCCEEDED)
         {
             k4abt_frame_get_body_skeleton(_body_frame, 0, &_skeleton);
