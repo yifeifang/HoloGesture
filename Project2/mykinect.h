@@ -12,8 +12,9 @@ class mykinect
         k4abt_tracker_t _tracker;
         k4abt_tracker_configuration_t _tracker_config;
         k4a_capture_t _sensor_capture;
-    public:
         k4abt_frame_t _body_frame;
+    public:
+        k4abt_skeleton_t _skeleton;
         mykinect(k4a_device_configuration_t deviceConfig, k4abt_tracker_configuration_t tracker_config);
         ~mykinect();
         void start_cameras();
@@ -22,5 +23,5 @@ class mykinect
         void release_capture();
         k4a_wait_result_t enqueue_capture(int32_t timeout_in_ms);
         k4a_wait_result_t pop_frame_result(int32_t timeout_in_ms);
-        void release_body_frame();
+        bool update_skeleton();
 };
