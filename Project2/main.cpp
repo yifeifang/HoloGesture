@@ -77,6 +77,7 @@ bool process_gesture(unsigned gesture_id, mykinect & device)
 
             k4a_float3_t init_position = {0};
 
+            // need to wait infinite time
             if (device.update_skeleton())
             {
                 if (device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].confidence_level >= K4ABT_JOINT_CONFIDENCE_MEDIUM)
@@ -95,9 +96,9 @@ bool process_gesture(unsigned gesture_id, mykinect & device)
                 {
                     if (device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].confidence_level >= K4ABT_JOINT_CONFIDENCE_MEDIUM)
                     {
-                        if(std::abs(device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.x - init_position.xyz.x) < 80)
+                        if(std::abs(device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.x - init_position.xyz.x) < 150)
                         {
-                            //printf("init y = %f, current y = %f, subtracted y = %f\n", init_position.xyz.y, device._skeleton.joints[K4ABT_JOINT_HAND_RIGHT].position.xyz.y, device._skeleton.joints[K4ABT_JOINT_HAND_RIGHT].position.xyz.y - init_position.xyz.y);
+                            printf("init y = %f, current y = %f, subtracted y = %f\n", init_position.xyz.y, device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.y, device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.y - init_position.xyz.y);
                             if ((device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.y - init_position.xyz.y) > 50)
                             {
                                 ip1.ki.dwFlags = 0;
