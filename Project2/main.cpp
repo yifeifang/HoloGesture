@@ -69,6 +69,11 @@ bool process_gesture(unsigned gesture_id, mykinect & device)
             ip1.ki.wVk = VK_VOLUME_DOWN;
             ip1.ki.dwFlags = 0;
 
+            ip1.ki.dwFlags = 0;
+            SendInput(1, &ip1, sizeof(INPUT));
+            ip1.ki.dwFlags = KEYEVENTF_KEYUP;
+            SendInput(1, &ip1, sizeof(INPUT));
+
             INPUT ip2 = { 0 };
             ip2.type = INPUT_KEYBOARD;
             ip2.ki.wVk = VK_VOLUME_UP;
