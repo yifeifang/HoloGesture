@@ -12,8 +12,8 @@ class mykinect
         k4abt_tracker_t _tracker;
         k4abt_tracker_configuration_t _tracker_config;
         k4a_capture_t _sensor_capture;
-        k4abt_frame_t _body_frame;
     public:
+        k4abt_frame_t _body_frame;
         mykinect(k4a_device_configuration_t deviceConfig, k4abt_tracker_configuration_t tracker_config);
         ~mykinect();
         void start_cameras();

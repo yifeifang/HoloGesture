@@ -63,6 +63,16 @@ bool process_gesture(unsigned gesture_id, k4a_device_t & device, k4abt_tracker_t
         }
         case 3:
         {
+            INPUT ip1 = { 0 };
+            ip1.type = INPUT_KEYBOARD;
+            ip1.ki.wVk = VK_VOLUME_DOWN;
+            ip1.ki.dwFlags = 0;
+
+            INPUT ip2 = { 0 };
+            ip2.type = INPUT_KEYBOARD;
+            ip2.ki.wVk = VK_VOLUME_UP;
+            ip2.ki.dwFlags = 0;
+
             k4a_float3_t init_position = {0};
             k4a_capture_t sensor_capture;
             k4a_wait_result_t get_capture_result = k4a_device_get_capture(device, &sensor_capture, K4A_WAIT_INFINITE);
@@ -121,16 +131,16 @@ bool process_gesture(unsigned gesture_id, k4a_device_t & device, k4abt_tracker_t
             }
             while (true)
             {
-                k4a_wait_result_t get_capture_result = k4a_device_get_capture(device, &sensor_capture, K4A_WAIT_INFINITE);
+                k4a_wait_result_t get_capture_result = k4a_device_get_capture(device, &sensor_capture, 100);
                 if (get_capture_result == K4A_WAIT_RESULT_SUCCEEDED)
                 {
-                    k4a_wait_result_t queue_capture_result = k4abt_tracker_enqueue_capture(tracker, sensor_capture, K4A_WAIT_INFINITE);
+                    k4a_wait_result_t queue_capture_result = k4abt_tracker_enqueue_capture(tracker, sensor_capture, 100);
                     k4a_capture_release(sensor_capture); // Remember to release the sensor capture once you finish using it
                     if (queue_capture_result == K4A_WAIT_RESULT_TIMEOUT)
                     {
                         // It should never hit timeout when K4A_WAIT_INFINITE is set.
                         printf("Error! Add capture to tracker process queue timeout!\n");
-                        break;
+                        continue;
                     }
                     else if (queue_capture_result == K4A_WAIT_RESULT_FAILED)
                     {
@@ -139,7 +149,7 @@ bool process_gesture(unsigned gesture_id, k4a_device_t & device, k4abt_tracker_t
                     }
 
                     k4abt_frame_t body_frame = NULL;
-                    k4a_wait_result_t pop_frame_result = k4abt_tracker_pop_result(tracker, &body_frame, K4A_WAIT_INFINITE);
+                    k4a_wait_result_t pop_frame_result = k4abt_tracker_pop_result(tracker, &body_frame, 100);
                     if (pop_frame_result == K4A_WAIT_RESULT_SUCCEEDED)
                     {
                         // Successfully popped the body tracking result. Start your processing
@@ -148,9 +158,27 @@ bool process_gesture(unsigned gesture_id, k4a_device_t & device, k4abt_tracker_t
                         k4abt_frame_get_body_skeleton(body_frame, 0, &my_skeleton);
                         if (my_skeleton.joints[K4ABT_JOINT_HAND_RIGHT].confidence_level >= K4ABT_JOINT_CONFIDENCE_MEDIUM)
                         {
-                            if (std::abs(my_skeleton.joints[K4ABT_JOINT_HAND_RIGHT].position.xyz.y - init_position.xyz.y) > 50)
+                            if (std::abs(my_skeleton.joints[K4ABT_JOINT_HAND_RIGHT].position.xyz.x - init_position.xyz.x) < 80)
                             {
-                                printf("init y = %f, current y = %f\n", init_position.xyz.y, my_skeleton.joints[K4ABT_JOINT_HAND_RIGHT].position.xyz.y);
+                                printf("init y = %f, current y = %f, subtracted y = %f\n", init_position.xyz.y, my_skeleton.joints[K4ABT_JOINT_HAND_RIGHT].position.xyz.y, my_skeleton.joints[K4ABT_JOINT_HAND_RIGHT].position.xyz.y - init_position.xyz.y);
+                                if ((my_skeleton.joints[K4ABT_JOINT_HAND_RIGHT].position.xyz.y - init_position.xyz.y) > 80)
+                                {
+                                    ip1.ki.dwFlags = 0;
+                                    SendInput(1, &ip1, sizeof(INPUT));
+                                    ip1.ki.dwFlags = KEYEVENTF_KEYUP;
+                                    SendInput(1, &ip1, sizeof(INPUT));
+                                }
+                                else if ((my_skeleton.joints[K4ABT_JOINT_HAND_RIGHT].position.xyz.y - init_position.xyz.y) < -80)
+                                {
+                                    ip2.ki.dwFlags = 0;
+                                    SendInput(1, &ip2, sizeof(INPUT));
+                                    ip2.ki.dwFlags = KEYEVENTF_KEYUP;
+                                    SendInput(1, &ip2, sizeof(INPUT));
+                                }
+                            }
+                            else
+                            {
+                                break;
                             }
                         }
                         k4abt_frame_release(body_frame); // Remember to release the body frame once you finish using it
@@ -171,7 +199,7 @@ bool process_gesture(unsigned gesture_id, k4a_device_t & device, k4abt_tracker_t
                 {
                     // It should never hit time out when K4A_WAIT_INFINITE is set.
                     printf("Error! Get depth frame time out!\n");
-                    break;
+                    continue;
                 }
                 else
                 {
