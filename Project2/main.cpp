@@ -75,6 +75,16 @@ bool process_gesture(unsigned gesture_id, mykinect & device)
             ip2.ki.wVk = VK_VOLUME_UP;
             ip2.ki.dwFlags = 0;
 
+            ip1.ki.dwFlags = 0;
+            SendInput(1, &ip1, sizeof(INPUT));
+            ip1.ki.dwFlags = KEYEVENTF_KEYUP;
+            SendInput(1, &ip1, sizeof(INPUT));
+
+            ip2.ki.dwFlags = 0;
+            SendInput(1, &ip2, sizeof(INPUT));
+            ip2.ki.dwFlags = KEYEVENTF_KEYUP;
+            SendInput(1, &ip2, sizeof(INPUT));
+
             k4a_float3_t init_position = {0};
 
             // need to wait infinite time
@@ -116,6 +126,7 @@ bool process_gesture(unsigned gesture_id, mykinect & device)
                         }
                         else
                         {
+                            printf("hand out of range\n");
                             break;
                         }
                     }
@@ -130,6 +141,7 @@ bool process_gesture(unsigned gesture_id, mykinect & device)
         default:
             break;
     }
+    printf("gesture process finished\n");
     return true;
 }
 
@@ -186,8 +198,8 @@ int main()
         }
         if (device.update_skeleton())
         {
-            if (device._skeleton.joints[K4ABT_JOINT_HAND_RIGHT].confidence_level >= K4ABT_JOINT_CONFIDENCE_MEDIUM)
-            {
+            //if (device._skeleton.joints[K4ABT_JOINT_HAND_RIGHT].confidence_level >= K4ABT_JOINT_CONFIDENCE_MEDIUM)
+            //{
                 joint_map[K4ABT_JOINT_HAND_RIGHT] = device._skeleton.joints[K4ABT_JOINT_HAND_RIGHT];
                 joint_map[K4ABT_JOINT_HAND_LEFT] = device._skeleton.joints[K4ABT_JOINT_HAND_LEFT];
                 joint_map[K4ABT_JOINT_WRIST_RIGHT] = device._skeleton.joints[K4ABT_JOINT_WRIST_RIGHT];
@@ -201,7 +213,7 @@ int main()
                     process_gesture(gesture, device);
                     Sleep(1000);
                 }
-            }
+            //}
         }
         else
         {
