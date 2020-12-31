@@ -3,6 +3,7 @@
 #include <k4abt.h>
 #include<vector>
 #include <unordered_map>
+#include "gesture.h"
 
 #define PI 3.14159265
 
@@ -18,7 +19,7 @@ class gestureNode
         gestureNode(unsigned id, bool leaf, k4abt_joint_id_t joint);
         virtual bool activate(k4abt_joint_t read)=0;
         bool add_child(gestureNode * child);
-        bool set_gesture(unsigned gesture_id);
+        bool set_gesture(gesture & new_gesture, std::unordered_map<int, gesture> & gesture_map);
         k4abt_joint_id_t get_joint(void);
         std::vector<gestureNode *> _children;
 };

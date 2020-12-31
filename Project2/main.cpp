@@ -7,6 +7,8 @@
 
 #include"gesturetree.h"
 #include"mykinect.h"
+#include"gesture.h"
+
 #include <windows.h>
 
 #define VERIFY(result, error)                                                                            \
@@ -16,145 +18,142 @@
         exit(1);                                                                                         \
     }                                                                                                    \
 
-bool process_gesture(unsigned gesture_id, mykinect & device)
+void gesture_display_desktop(mykinect & device)
 {
-    printf("process_gesture\n");
-    switch (gesture_id)
+    INPUT ip1 = { 0 };
+    ip1.type = INPUT_KEYBOARD;
+    ip1.ki.wVk = VK_LWIN;
+    ip1.ki.dwFlags = 0;
+    SendInput(1, &ip1, sizeof(INPUT));
+
+    INPUT ip2 = { 0 };
+    ip2.type = INPUT_KEYBOARD;
+    ip2.ki.wVk = 0x44;
+    ip2.ki.dwFlags = 0;
+    SendInput(1, &ip2, sizeof(INPUT));
+
+    ip1.ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(1, &ip1, sizeof(INPUT));
+
+    ip2.ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(1, &ip2, sizeof(INPUT));
+}
+
+void gesture_multi_task(mykinect& device)
+{
+    INPUT ip1 = { 0 };
+    ip1.type = INPUT_KEYBOARD;
+    ip1.ki.wVk = VK_LWIN;
+    ip1.ki.dwFlags = 0;
+    SendInput(1, &ip1, sizeof(INPUT));
+
+    INPUT ip2 = { 0 };
+    ip2.type = INPUT_KEYBOARD;
+    ip2.ki.wVk = VK_TAB;
+    ip2.ki.dwFlags = 0;
+    SendInput(1, &ip2, sizeof(INPUT));
+
+    ip1.ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(1, &ip1, sizeof(INPUT));
+
+    ip2.ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(1, &ip2, sizeof(INPUT));
+}
+
+void gesture_volumn_adjust(mykinect& device)
+{
+    INPUT ip1 = { 0 };
+    ip1.type = INPUT_KEYBOARD;
+    ip1.ki.wVk = VK_VOLUME_DOWN;
+    ip1.ki.dwFlags = 0;
+
+    INPUT ip2 = { 0 };
+    ip2.type = INPUT_KEYBOARD;
+    ip2.ki.wVk = VK_VOLUME_UP;
+    ip2.ki.dwFlags = 0;
+
+    // set volumn up and down to activate volumn control giving user feedback
+    ip1.ki.dwFlags = 0;
+    SendInput(1, &ip1, sizeof(INPUT));
+    ip1.ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(1, &ip1, sizeof(INPUT));
+
+    ip2.ki.dwFlags = 0;
+    SendInput(1, &ip2, sizeof(INPUT));
+    ip2.ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(1, &ip2, sizeof(INPUT));
+
+    k4a_float3_t init_position = { 0 };
+
+    // discard first two frame which might be unstable
+    device.update_skeleton(100);
+    device.update_skeleton(100);
+
+    // Do an average over 5 data points to debouncing
+    float avg_x = 0.0f, avg_y = 0.0f, avg_z = 0.0f;
+    for (int i = 0; i < 5; i++)
     {
-        case 1:
+        if (device.update_skeleton(K4A_WAIT_INFINITE))
         {
-            INPUT ip1 = { 0 };
-            ip1.type = INPUT_KEYBOARD;
-            ip1.ki.wVk = VK_LWIN;
-            ip1.ki.dwFlags = 0;
-            SendInput(1, &ip1, sizeof(INPUT));
-
-            INPUT ip2 = { 0 };
-            ip2.type = INPUT_KEYBOARD;
-            ip2.ki.wVk = 0x44;
-            ip2.ki.dwFlags = 0;
-            SendInput(1, &ip2, sizeof(INPUT));
-
-            ip1.ki.dwFlags = KEYEVENTF_KEYUP;
-            SendInput(1, &ip1, sizeof(INPUT));
-
-            ip2.ki.dwFlags = KEYEVENTF_KEYUP;
-            SendInput(1, &ip2, sizeof(INPUT));
-            break;
-        }
-        case 2:
-        {
-            INPUT ip1 = { 0 };
-            ip1.type = INPUT_KEYBOARD;
-            ip1.ki.wVk = VK_LWIN;
-            ip1.ki.dwFlags = 0;
-            SendInput(1, &ip1, sizeof(INPUT));
-
-            INPUT ip2 = { 0 };
-            ip2.type = INPUT_KEYBOARD;
-            ip2.ki.wVk = VK_TAB;
-            ip2.ki.dwFlags = 0;
-            SendInput(1, &ip2, sizeof(INPUT));
-
-            ip1.ki.dwFlags = KEYEVENTF_KEYUP;
-            SendInput(1, &ip1, sizeof(INPUT));
-
-            ip2.ki.dwFlags = KEYEVENTF_KEYUP;
-            SendInput(1, &ip2, sizeof(INPUT));
-            break;
-        }
-        case 3:
-        {
-            INPUT ip1 = { 0 };
-            ip1.type = INPUT_KEYBOARD;
-            ip1.ki.wVk = VK_VOLUME_DOWN;
-            ip1.ki.dwFlags = 0;
-
-            INPUT ip2 = { 0 };
-            ip2.type = INPUT_KEYBOARD;
-            ip2.ki.wVk = VK_VOLUME_UP;
-            ip2.ki.dwFlags = 0;
-
-            ip1.ki.dwFlags = 0;
-            SendInput(1, &ip1, sizeof(INPUT));
-            ip1.ki.dwFlags = KEYEVENTF_KEYUP;
-            SendInput(1, &ip1, sizeof(INPUT));
-
-            ip2.ki.dwFlags = 0;
-            SendInput(1, &ip2, sizeof(INPUT));
-            ip2.ki.dwFlags = KEYEVENTF_KEYUP;
-            SendInput(1, &ip2, sizeof(INPUT));
-
-            k4a_float3_t init_position = {0};
-
-            // discard first two frame which might be unstable
-            device.update_skeleton(100);
-            device.update_skeleton(100);
-
-            // Do an average over 5 data points to debouncing
-            float avg_x = 0.0f, avg_y = 0.0f, avg_z = 0.0f;
-            for (int i = 0; i < 5; i++)
+            if (device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].confidence_level >= K4ABT_JOINT_CONFIDENCE_MEDIUM)
             {
-                if (device.update_skeleton(K4A_WAIT_INFINITE))
-                {
-                    if (device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].confidence_level >= K4ABT_JOINT_CONFIDENCE_MEDIUM)
-                    {
-                        avg_x += device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.x;
-                        avg_y += device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.y;
-                        avg_z += device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.z;
-                    }
-                    else // always average 5 frames
-                    {
-                        i--;
-                    }
-                }
+                avg_x += device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.x;
+                avg_y += device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.y;
+                avg_z += device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.z;
             }
-
-            init_position.xyz.x = avg_x / 5;
-            init_position.xyz.y = avg_y / 5;
-            init_position.xyz.z = avg_z / 5;
-
-            while (true)
+            else // always average 5 frames
             {
-                if (device.update_skeleton(0))
+                i--;
+            }
+        }
+    }
+
+    init_position.xyz.x = avg_x / 5;
+    init_position.xyz.y = avg_y / 5;
+    init_position.xyz.z = avg_z / 5;
+
+    while (true)
+    {
+        if (device.update_skeleton(0))
+        {
+            if (device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].confidence_level >= K4ABT_JOINT_CONFIDENCE_MEDIUM)
+            {
+                if (std::abs(device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.x - init_position.xyz.x) < 80)
                 {
-                    if (device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].confidence_level >= K4ABT_JOINT_CONFIDENCE_MEDIUM)
+                    printf("init x = %f, current x = %f, subtracted y = %f\n", init_position.xyz.x, device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.x, device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.y - init_position.xyz.y);
+                    if ((device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.y - init_position.xyz.y) > 50)
                     {
-                        if(std::abs(device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.x - init_position.xyz.x) < 80)
-                        {
-                            printf("init x = %f, current x = %f, subtracted y = %f\n", init_position.xyz.x, device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.x, device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.y - init_position.xyz.y);
-                            if ((device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.y - init_position.xyz.y) > 50)
-                            {
-                                ip1.ki.dwFlags = 0;
-                                SendInput(1, &ip1, sizeof(INPUT));
-                                ip1.ki.dwFlags = KEYEVENTF_KEYUP;
-                                SendInput(1, &ip1, sizeof(INPUT));
-                            }
-                            else if ((device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.y - init_position.xyz.y) < -50)
-                            {
-                                ip2.ki.dwFlags = 0;
-                                SendInput(1, &ip2, sizeof(INPUT));
-                                ip2.ki.dwFlags = KEYEVENTF_KEYUP;
-                                SendInput(1, &ip2, sizeof(INPUT));
-                            }
-                        }
-                        else
-                        {
-                            printf("hand out of range\n");
-                            break;
-                        }
+                        ip1.ki.dwFlags = 0;
+                        SendInput(1, &ip1, sizeof(INPUT));
+                        ip1.ki.dwFlags = KEYEVENTF_KEYUP;
+                        SendInput(1, &ip1, sizeof(INPUT));
+                    }
+                    else if ((device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.y - init_position.xyz.y) < -50)
+                    {
+                        ip2.ki.dwFlags = 0;
+                        SendInput(1, &ip2, sizeof(INPUT));
+                        ip2.ki.dwFlags = KEYEVENTF_KEYUP;
+                        SendInput(1, &ip2, sizeof(INPUT));
                     }
                 }
                 else
                 {
-                    continue;
+                    printf("hand out of range\n");
+                    break;
                 }
             }
-            break;
         }
-        default:
-            break;
+        else
+        {
+            continue;
+        }
     }
+}
+
+bool process_gesture(int gesture_id, mykinect & device, std::unordered_map<int, gesture> & gesture_map)
+{
+    printf("process_gesture\n");
+    gesture_map.at(gesture_id)(device);
     printf("gesture process finished\n");
     return true;
 }
@@ -162,6 +161,7 @@ bool process_gesture(unsigned gesture_id, mykinect & device)
 int main()
 {
     std::unordered_map<k4abt_joint_id_t, k4abt_joint_t> joint_map;
+    std::unordered_map<int, gesture> gesture_map;
 
     positionNode * root = new positionNode(0, false, K4ABT_JOINT_HAND_RIGHT, k4a_float3_t{0,0,0}, 200);
     positionNode * front = new positionNode(1, false, K4ABT_JOINT_HAND_RIGHT, k4a_float3_t{ -250,-80,385 }, 200);
@@ -172,11 +172,15 @@ int main()
     positionNode* volume = new positionNode(6, true, K4ABT_JOINT_HAND_LEFT, k4a_float3_t{ 250,-60,250 }, 200);
     positionNode* volume_start = new positionNode(7, false, K4ABT_JOINT_HAND_LEFT, k4a_float3_t{ 490,-80,300 }, 200);
 
-    back->set_gesture(1);
-    right->set_gesture(2);
-    left2->set_gesture(2);
+    gesture mygesture1(1, "Display Desktop", gesture_display_desktop);
+    gesture mygesture2(2, "Multi task", gesture_multi_task);
+    gesture mygesture3(3, "Volumn adjust", gesture_volumn_adjust);
+
+    back->set_gesture(mygesture1, gesture_map);
+    right->set_gesture(mygesture2, gesture_map);
+    left2->set_gesture(mygesture2, gesture_map);
     //test->set_gesture(3);
-    volume->set_gesture(3);
+    volume->set_gesture(mygesture3, gesture_map);
 
     front->add_child(back);
     front->add_child(left2);
@@ -225,7 +229,7 @@ int main()
                 }
                 else if (gesture)     
                 {
-                    process_gesture(gesture, device);
+                    process_gesture(gesture, device, gesture_map);
                     Sleep(1000);
                 }
             //}

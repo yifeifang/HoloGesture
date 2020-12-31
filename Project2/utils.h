@@ -2,6 +2,7 @@
 
 #include <k4a/k4a.h>
 #include <k4abt.h>      
+#include "gesturetree.h"
 
 void VERIFY_k4a_result_t(k4a_result_t result);
 

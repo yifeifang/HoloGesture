@@ -15,9 +15,10 @@ bool gestureNode::add_child(gestureNode* child)
     return true;
 }
 
-bool gestureNode::set_gesture(unsigned gesture_id)
+bool gestureNode::set_gesture(gesture & new_gesture, std::unordered_map<int, gesture>& gesture_map)
 {
-    this->_gesture_id = gesture_id;
+    this->_gesture_id = new_gesture.get_gesture_id();
+    gesture_map[new_gesture.get_gesture_id()] = new_gesture;
     return true;
 }
 
