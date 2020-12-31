@@ -49,7 +49,7 @@ gestureTree::gestureTree(gestureNode* Node, gestureNode* root, std::unordered_ma
 
 int gestureTree::traverse_map(void)
 {
-    if (timeout >= 45)
+    if (timeout >= 30)
     {
         timeout = 0;
         printf("Gesture timeout\n");
