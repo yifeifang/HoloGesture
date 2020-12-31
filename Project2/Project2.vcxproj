@@ -152,6 +152,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="gesture.cpp" />
     <ClCompile Include="gesturetree.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mykinect.cpp" />
@@ -159,6 +160,7 @@
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="gesture.h" />
     <ClInclude Include="gesturetree.h" />
     <ClInclude Include="mykinect.h" />
     <ClInclude Include="Quat.h" />
