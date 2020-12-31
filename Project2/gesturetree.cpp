@@ -49,9 +49,16 @@ gestureTree::gestureTree(gestureNode* Node, gestureNode* root, std::unordered_ma
 
 int gestureTree::traverse_map(void)
 {
-    for (auto& child : state->_children)
+    if (timeout >= 30)
     {
-        if (child->activate((*pjoint_map)[child->get_joint()]))
+        timeout = 0;
+        printf("Gesture timeout\n");
+        set_state(_root);
+        return -1;
+    }
+    for (auto& child : state->_children)
+    {      
+        if ((*pjoint_map)[child->get_joint()].confidence_level >= K4ABT_JOINT_CONFIDENCE_MEDIUM && child->activate((*pjoint_map)[child->get_joint()]))
         {
             if (child->_leaf)
             {
@@ -63,21 +70,12 @@ int gestureTree::traverse_map(void)
             else
             {
                 printf("Detect state ID = %d\n", child->_id);
+                timeout = 0;
                 state = child;
             }
         }
-        else if (timeout >= 150)
-        {
-            timeout = 0;
-            printf("Gesture timeout\n");
-            set_state(_root);
-            return -1;
-        }
-        else
-        {
-            timeout++;
-        }
     }
+    timeout++;
     return 0;
 }
 
