@@ -112,14 +112,17 @@ void gesture_volumn_adjust(mykinect& device)
     init_position.xyz.y = avg_y / 5;
     init_position.xyz.z = avg_z / 5;
 
+    int time_out = 0;
+
     while (true)
     {
         if (device.update_skeleton(0))
         {
             if (device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].confidence_level >= K4ABT_JOINT_CONFIDENCE_MEDIUM)
             {
-                if (std::abs(device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.x - init_position.xyz.x) < 80)
+                if (std::abs(device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.x - init_position.xyz.x) < 120)
                 {
+                    time_out = 0;
                     printf("init x = %f, current x = %f, subtracted y = %f\n", init_position.xyz.x, device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.x, device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.y - init_position.xyz.y);
                     if ((device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.y - init_position.xyz.y) > 50)
                     {
@@ -138,8 +141,12 @@ void gesture_volumn_adjust(mykinect& device)
                 }
                 else
                 {
-                    printf("hand out of range\n");
-                    break;
+                    time_out++;
+                    if (time_out >= 5)
+                    {
+                        printf("hand out of range\n");
+                        break;
+                    }
                 }
             }
         }
