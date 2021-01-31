@@ -46,8 +46,24 @@ Download HoloGesture.zip file downloaded from this github page. Unzip and you wi
 
 Please run `VC_redist.x64.exe` to install visual c++ denpendency then run `HoloGesture.exe`. A terminal should pop-up and logging some necessery information.
 
-Plesae refer to [Usage section](#Usage) for how to navigate in third 
+Plesae refer to [Usage section](#Usage) for how to navigate in 3D with gestures
 # 4.  Usage
+After Launching `HoloGesture.exe` you can start to play around with gestures. Currently all the gesture presets are refer to absolute coordinate frame of Azure Kinect. Relative coordinate frame feature would be added in future releases.
+
+**Supported Gestures**
+1.  Display Desktop  
+Right hand forward then backword
+![Display](./gifs/desktop)
+
+2.  Multitask  
+Right hand wave from right to left or from left to right
+
+3.  Volumn Adjustment  
+Left hand come from far left and stop in approximately 30 degree to the left from the  
+
+4.  Cortana  
+Left hand stay at lower left until conversation with Cortana done
+
 
 # 5.  Roadmap
 
