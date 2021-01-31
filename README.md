@@ -53,19 +53,19 @@ After Launching `HoloGesture.exe` you can start to play around with gestures. Cu
 **Supported Gestures**
 1.  Display Desktop  
 Right hand forward then backword
-![Display Desktop](https://github.com/yifeifang/HoloGesture/tree/gesture_object/gifs/desktop.gif)
+![Display Desktop](https://github.com/yifeifang/HoloGesture/blob/gesture_object/gifs/desktop.gif)
 
 2.  Multitask  
 Right hand wave from right to left or from left to right
-![Multi-Task](https://github.com/yifeifang/HoloGesture/tree/gesture_object/gifs/multitask.gif)
+![Multi-Task](https://github.com/yifeifang/HoloGesture/blob/gesture_object/gifs/multitask.gif)
 
 3.  Volumn Adjustment  
 Left hand come from far left and stop in approximately 30 degree to the left from the  
-![Volume](https://github.com/yifeifang/HoloGesture/tree/gesture_object/gifs/volume.gif)
+![Volume](https://github.com/yifeifang/HoloGesture/blob/gesture_object/gifs/volume.gif)
 
 4.  Cortana  
 Left hand stay at lower left until conversation with Cortana done
-![Cortana](https://github.com/yifeifang/HoloGesture/tree/gesture_object/gifs/cortana.gif)
+![Cortana](https://github.com/yifeifang/HoloGesture/blob/gesture_object/gifs/cortana.gif)
 
 # 5.  Roadmap
 
