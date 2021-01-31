@@ -39,6 +39,90 @@ void gesture_display_desktop(mykinect & device)
     SendInput(1, &ip2, sizeof(INPUT));
 }
 
+void gesture_ask_cortana(mykinect& device)
+{
+    INPUT ip1 = { 0 };
+    ip1.type = INPUT_KEYBOARD;
+    ip1.ki.wVk = VK_LWIN;
+    ip1.ki.dwFlags = 0;
+    SendInput(1, &ip1, sizeof(INPUT));
+
+    INPUT ip2 = { 0 };
+    ip2.type = INPUT_KEYBOARD;
+    ip2.ki.wVk = 0x43;
+    ip2.ki.dwFlags = 0;
+    SendInput(1, &ip2, sizeof(INPUT));
+
+    ip1.ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(1, &ip1, sizeof(INPUT));
+
+    ip2.ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(1, &ip2, sizeof(INPUT));
+
+    k4a_float3_t init_position = { 0 };
+
+    // discard first two frame which might be unstable
+    device.update_skeleton(100);
+    device.update_skeleton(100);
+
+    // Do an average over 5 data points to debouncing
+    float avg_x = 0.0f, avg_y = 0.0f, avg_z = 0.0f;
+    for (int i = 0; i < 5; i++)
+    {
+        if (device.update_skeleton(K4A_WAIT_INFINITE))
+        {
+            if (device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].confidence_level >= K4ABT_JOINT_CONFIDENCE_MEDIUM)
+            {
+                avg_x += device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.x;
+                avg_y += device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.y;
+                avg_z += device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.z;
+            }
+            else // always average 5 frames
+            {
+                i--;
+            }
+        }
+    }
+
+    init_position.xyz.x = avg_x / 5;
+    init_position.xyz.y = avg_y / 5;
+    init_position.xyz.z = avg_z / 5;
+
+    int time_out = 0;
+
+    while (true)
+    {
+        if (device.update_skeleton(0))
+        {
+            if (device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].confidence_level >= K4ABT_JOINT_CONFIDENCE_MEDIUM)
+            {
+                if (std::abs(device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.x - init_position.xyz.x) < 120)
+                {
+                    continue;
+                }
+                else
+                {
+                    time_out++;
+                }
+            }
+            else
+            {
+                time_out++;
+            }
+
+            if (time_out >= 5)
+            {
+                system("TASKKILL /F /IM Cortana.exe 1>NULL");
+                break;
+            }
+        }
+        else
+        {
+            continue;
+        }
+    }
+}
+
 void gesture_multi_task(mykinect& device)
 {
     INPUT ip1 = { 0 };
@@ -142,12 +226,16 @@ void gesture_volumn_adjust(mykinect& device)
                 else
                 {
                     time_out++;
-                    if (time_out >= 5)
-                    {
-                        printf("hand out of range\n");
-                        break;
-                    }
                 }
+            }
+            else
+            {
+                time_out++;
+            }
+            if (time_out >= 5)
+            {
+                printf("hand out of range\n");
+                break;
             }
         }
         else
@@ -178,16 +266,19 @@ int main()
     positionNode* left2 = new positionNode(5, true, K4ABT_JOINT_HAND_RIGHT, k4a_float3_t{ 250,-25,500 }, 200);
     positionNode* volume = new positionNode(6, true, K4ABT_JOINT_HAND_LEFT, k4a_float3_t{ 250,-60,250 }, 200);
     positionNode* volume_start = new positionNode(7, false, K4ABT_JOINT_HAND_LEFT, k4a_float3_t{ 490,-80,300 }, 200);
+    positionNode* cortana = new positionNode(8, true, K4ABT_JOINT_HAND_LEFT, k4a_float3_t{ 250,-100,275 }, 200);
 
     gesture mygesture1(1, "Display Desktop", gesture_display_desktop);
     gesture mygesture2(2, "Multi task", gesture_multi_task);
     gesture mygesture3(3, "Volumn adjust", gesture_volumn_adjust);
+    gesture mygesture4(4, "Cortana", gesture_ask_cortana);
 
     back->set_gesture(mygesture1, gesture_map);
     right->set_gesture(mygesture2, gesture_map);
     left2->set_gesture(mygesture2, gesture_map);
     //test->set_gesture(3);
     volume->set_gesture(mygesture3, gesture_map);
+    cortana->set_gesture(mygesture4, gesture_map);
 
     front->add_child(back);
     front->add_child(left2);
@@ -198,6 +289,7 @@ int main()
     root->add_child(front);
     root->add_child(left);
     root->add_child(volume_start);
+    root->add_child(cortana);
     //root->add_child(test);
 
     gestureTree mytree(root, root, &joint_map);
