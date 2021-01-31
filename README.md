@@ -52,19 +52,19 @@ After Launching `HoloGesture.exe` you can start to play around with gestures. Cu
 
 **Supported Gestures**
 1.  Display Desktop  
-Right hand forward then backword
+Right hand forward then backword will trigger a display desktop. Do it again will bring your desktop back.
 ![Display Desktop](https://github.com/yifeifang/HoloGesture/blob/gesture_object/gifs/desktop.gif)
 
 2.  Multitask  
-Right hand wave from right to left or from left to right
+Right hand wave from right to left or from left to right to enable multitask view. Do it again goes back to your original screen.
 ![Multi-Task](https://github.com/yifeifang/HoloGesture/blob/gesture_object/gifs/multitask.gif)
 
 3.  Volumn Adjustment  
-Left hand come from far left and stop in approximately 30 degree to the left from the  
+Left hand come from far left and stop in approximately 30 degree to the left from center. Then moving up and down would adjust system volume accordingly. When finished just horizontally move away your hand.
 ![Volume](https://github.com/yifeifang/HoloGesture/blob/gesture_object/gifs/volume.gif)
 
 4.  Cortana  
-Left hand stay at lower left until conversation with Cortana done
+Left hand stay at lower left until conversation with Cortana done. Move away would close cortana window.
 ![Cortana](https://github.com/yifeifang/HoloGesture/blob/gesture_object/gifs/cortana.gif)
 
 # 5.  Roadmap
