@@ -1,8 +1,7 @@
 # 1.  Introduction
+Holo-Gesture is a depth camera based human computer interaction infrastructure.
 
-# 2.  Install
-
-# 3.  Getting Started
+# 2.  Getting Started
 
 ## Pre-requests
 Our code is fully written in C++ and build with Visual Studio 2019 Community.  
@@ -47,7 +46,7 @@ Download HoloGesture.zip file downloaded from this github page. Unzip and you wi
 Please run `VC_redist.x64.exe` to install visual c++ denpendency then run `HoloGesture.exe`. A terminal should pop-up and logging some necessery information.
 
 Plesae refer to [Usage section](#Usage) for how to navigate in 3D with gestures
-# 4.  Usage
+# 3.  Usage
 After Launching `HoloGesture.exe` you can start to play around with gestures. Currently all the gesture presets are refer to absolute coordinate frame of Azure Kinect. Relative coordinate frame feature would be added in future releases.
 
 **Supported Gestures**
@@ -67,10 +66,13 @@ Left hand come from far left and stop in approximately 30 degree to the left fro
 Left hand stay at lower left until conversation with Cortana done. Move away would close cortana window.  
 ![Cortana](https://github.com/yifeifang/HoloGesture/blob/gesture_object/gifs/cortana.gif)
 
-# 5.  Roadmap
+# 4.  Future Roadmap
+1.  QT based GUI that provide user ability to do customization work in house
+2.  Relative coordinate frame support
+3.  Library for various presets and 3rd part application support (3D modeling software) 
+# 5.  FAQs
 
-# 6.  FAQs
+# 6.  Contact
+**Author: Deweyfang@gmail.com**
 
-# 7.  Contact
-
-# 8.  Acknowledgements
+# 7.  Acknowledgements
