@@ -266,7 +266,8 @@ int main()
     positionNode* left2 = new positionNode(5, true, K4ABT_JOINT_HAND_RIGHT, k4a_float3_t{ 250,-25,500 }, 200);
     positionNode* volume = new positionNode(6, true, K4ABT_JOINT_HAND_LEFT, k4a_float3_t{ 250,-60,250 }, 200);
     positionNode* volume_start = new positionNode(7, false, K4ABT_JOINT_HAND_LEFT, k4a_float3_t{ 490,-80,300 }, 200);
-    positionNode* cortana = new positionNode(8, true, K4ABT_JOINT_HAND_LEFT, k4a_float3_t{ 250,-100,275 }, 200);
+    positionNode* cortana = new positionNode(8, false, K4ABT_JOINT_HAND_LEFT, k4a_float3_t{ 250,-100,275 }, 200);
+    pitchNode* cortana_look = new pitchNode(9, true, K4ABT_JOINT_HEAD, -70, 8);
 
     gesture mygesture1(1, "Display Desktop", gesture_display_desktop);
     gesture mygesture2(2, "Multi task", gesture_multi_task);
@@ -278,12 +279,13 @@ int main()
     left2->set_gesture(mygesture2, gesture_map);
     //test->set_gesture(3);
     volume->set_gesture(mygesture3, gesture_map);
-    cortana->set_gesture(mygesture4, gesture_map);
+    cortana_look->set_gesture(mygesture4, gesture_map);
 
     front->add_child(back);
     front->add_child(left2);
     left->add_child(right);
     volume_start->add_child(volume);
+    cortana->add_child(cortana_look);
     //left_left_land->add_child(test);
 
     root->add_child(front);
@@ -320,8 +322,18 @@ int main()
                 joint_map[K4ABT_JOINT_HAND_RIGHT] = device._skeleton.joints[K4ABT_JOINT_HAND_RIGHT];
                 joint_map[K4ABT_JOINT_HAND_LEFT] = device._skeleton.joints[K4ABT_JOINT_HAND_LEFT];
                 joint_map[K4ABT_JOINT_WRIST_RIGHT] = device._skeleton.joints[K4ABT_JOINT_WRIST_RIGHT];
+                joint_map[K4ABT_JOINT_HEAD] = device._skeleton.joints[K4ABT_JOINT_HEAD];
 
                 //printf("X = %f, Y= %f, Z = %f\n", device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.x, device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.y, device._skeleton.joints[K4ABT_JOINT_HAND_LEFT].position.xyz.z);
+                //printf("W = %f, X = %f, Y= %f, Z = %f\n", device._skeleton.joints[K4ABT_JOINT_WRIST_LEFT].orientation.wxyz.w, device._skeleton.joints[K4ABT_JOINT_WRIST_LEFT].orientation.wxyz.x, device._skeleton.joints[K4ABT_JOINT_WRIST_LEFT].orientation.wxyz.y, device._skeleton.joints[K4ABT_JOINT_WRIST_LEFT].orientation.wxyz.z);
+                //auto q = device._skeleton.joints[K4ABT_JOINT_HEAD].orientation.wxyz;
+                //double pitch = atan2(2.0 * q.w * q.x + 2.0 * q.y * q.z, 1 - 2.0 * q.x * q.x - 2.0 * q.y * q.y);
+                //double yaw = 2.0 * q.w * q.y - 2.0 * q.z * q.x;
+                //yaw = yaw > 1.0 ? 1.0 : yaw;
+                //yaw = yaw < -1.0 ? -1.0 : yaw;
+                //yaw = asin(yaw);
+                //double roll = atan2(2.0 * q.w * q.z + 2.0 * q.y * q.x, 1 - 2.0 * q.y * q.y - 2.0 * q.z * q.z);
+                //printf("pitch = %f, yaw = %f, rolll = %f\n", pitch * (180.0 / 3.14), yaw * (180.0 / 3.14), roll * (180.0 / 3.14));
                 int gesture = mytree.traverse_map();
                 if (gesture == -1)// timeout
                 {
@@ -331,6 +343,7 @@ int main()
                     process_gesture(gesture, device, gesture_map);
                     Sleep(1000);
                 }
+
             //}
         }
         else

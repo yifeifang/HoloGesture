@@ -35,9 +35,14 @@ public:
     virtual bool activate(k4abt_joint_t read) override;
 };
 
-class orientationNode : public gestureNode
+class pitchNode : public gestureNode
 {
-    // depreciated
+private:
+    double _pitch;
+    float _threshold;
+public:
+    pitchNode(unsigned id, bool leaf, k4abt_joint_id_t joint, double pitch, float threshold);
+    virtual bool activate(k4abt_joint_t read) override;
 };
 
 class gestureTree

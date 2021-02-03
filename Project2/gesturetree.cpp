@@ -86,4 +86,21 @@ bool gestureTree::set_state(gestureNode * Node)
     return true;
 }
 
+pitchNode::pitchNode(unsigned id, bool leaf, k4abt_joint_id_t joint, double pitch, float threshold): gestureNode(id, leaf, joint), _pitch(pitch), _threshold(threshold)
+{
+}
 
+bool pitchNode::activate(k4abt_joint_t read)
+{
+    auto q = read.orientation.wxyz;
+    double pitch = atan2(2.0 * q.w * q.x + 2.0 * q.y * q.z, 1 - 2.0 * q.x * q.x - 2.0 * q.y * q.y) * (180.0 / 3.14);
+    printf("pitch = %f\n", pitch);
+    if (std::abs(std::abs(_pitch) - std::abs(pitch)) < _threshold)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}

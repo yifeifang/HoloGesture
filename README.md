@@ -49,7 +49,7 @@ Plesae refer to [Usage section](#Usage) for how to navigate in 3D with gestures
 # 3.  Usage
 After Launching `HoloGesture.exe` you can start to play around with gestures. Currently all the gesture presets are refer to absolute coordinate frame of Azure Kinect. Relative coordinate frame feature would be added in future releases.
 
-**Supported Gestures**
+**Supported Gestures**  
 1.  Display Desktop  
 Right hand forward then backword will trigger a display desktop. Do it again will bring your desktop back.  
 ![Display Desktop](https://github.com/yifeifang/HoloGesture/blob/gesture_object/gifs/desktop.gif)
